@@ -43,7 +43,7 @@ func MqttSay(message, nick string) error {
 	}
 	j, err := json.Marshal(payload)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// Publish a message.
