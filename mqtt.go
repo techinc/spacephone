@@ -22,9 +22,6 @@ func MqttInit() {
 	//sigc := make(chan os.Signal, 1)
 	//signal.Notify(sigc, os.Interrupt, os.Kill)
 
-	// Terminate the Client.
-	defer mqttcli.Terminate()
-
 	// Connect to the MQTT Server.
 	err := mqttcli.Connect(&client.ConnectOptions{
 		Network:  "tcp",
@@ -52,4 +49,8 @@ func MqttSay(message, nick string) error {
 		TopicName: []byte("ledslie/alert/1/spacealert"),
 		Message:   j,
 	})
+}
+
+func MqttStop() {
+	defer mqttcli.Terminate()
 }
