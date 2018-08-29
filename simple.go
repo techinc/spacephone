@@ -27,6 +27,7 @@ var commands = map[string]cmdFunc{
 	"spacestate": spacestate,
 	"alert":      alert,
 	"battery":    battery,
+	"vibrate":    vibrate,
 	"help":       help,
 }
 
@@ -38,7 +39,7 @@ func say(e *irc.Event, parsed_message, reply string) error {
 	if time.Now().Before(silenced) {
 		return fmt.Errorf("Currently silenced")
 	}
-	Espeak(e.Arguments[1][4:])
+	Espeak(parsed_message)
 	return nil
 }
 
@@ -90,6 +91,11 @@ func battery(e *irc.Event, parsed_message, reply string) error {
 		irccon.Privmsg(reply, fmt.Sprintf("Percentage: %d", percentage))
 
 	}()
+	return nil
+}
+
+func vibrate(e *irc.Event, parsed_message, reply string) error {
+	Vibrate()
 	return nil
 }
 
