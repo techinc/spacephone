@@ -37,14 +37,16 @@ type cmdFunc = func(*irc.Event, string, string) error
 type recFunc = func() error
 
 var commands = map[string]cmdFunc{
-	"say":        say,
-	"silence":    silence,
-	"spacestate": spacestate,
-	"alert":      alert,
-	"battery":    battery,
-	"vibrate":    vibrate,
-	"mpd":        mpdf,
-	"help":       help,
+	"say":            say,
+	"silence":        silence,
+	"spacestate":     spacestate,
+	"alert":          alert,
+	"battery":        battery,
+	"vibrate":        vibrate,
+	"mpd":            mpdf,
+	"powersocketon":  powersocketon,
+	"powersocketoff": powersocketoff,
+	"help":           help,
 }
 
 var irccon = irc.IRC("", "") // FIXME
@@ -161,8 +163,26 @@ func mpdf(e *irc.Event, parsed_message, reply string) error {
 	return nil
 }
 
+func powersocketon(e *irc.Event, parsed_message, reply string) error {
+	err := PowerSocketSet(parsed_message, true)
+	if err != nil {
+		return err
+	}
+	irccon.Privmsg(reply, "consider it done")
+	return nil
+}
+
+func powersocketoff(e *irc.Event, parsed_message, reply string) error {
+	err := PowerSocketSet(parsed_message, false)
+	if err != nil {
+		return err
+	}
+	irccon.Privmsg(reply, "consider it done")
+	return nil
+}
+
 func help(e *irc.Event, parsed_message, reply string) error {
-	irccon.Privmsg(reply, commandprefix+"{say,silence,spacestate,alert,battery,vibrate,mpd}")
+	irccon.Privmsg(reply, commandprefix+"{say,silence,spacestate,alert,battery,vibrate,mpd,powersocketon,powersocketoff}")
 	return nil
 }
 
