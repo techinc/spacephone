@@ -15,11 +15,26 @@ import (
 const serverssl = "irc.oftc.net:6667"
 const ownnick = "spacephone"
 
+// When is a battery considered low?
+const battery_low = 42
+
+// When to check if the battery is low
+const battery_check_time = time.Second * 30
+
+// How often to remind about a low battery
+const battery_reminder_time = time.Second * 15
+
+// When to check if the battery charging state has changed
+const battery_charge_check_time = time.Second * 30
+
+var battery_charging = false
+
 const commandprefix = "!"
 
 //const serverssl = "irc.oftc.net:6697"
 
 type cmdFunc = func(*irc.Event, string, string) error
+type recFunc = func() error
 
 var commands = map[string]cmdFunc{
 	"say":        say,
@@ -34,6 +49,7 @@ var commands = map[string]cmdFunc{
 var irccon = irc.IRC("", "") // FIXME
 
 var silenced = time.Unix(0, 0)
+var last_battery_warning = time.Unix(0, 0)
 
 func say(e *irc.Event, parsed_message, reply string) error {
 	if time.Now().Before(silenced) {
@@ -87,8 +103,18 @@ func battery(e *irc.Event, parsed_message, reply string) error {
 			irccon.Privmsg(reply, fmt.Sprintf("Error getting battery percentage: %v", err))
 			return
 		}
+		charging, err := BatteryCharging()
+		if err != nil {
+			irccon.Privmsg(reply, fmt.Sprintf("Error getting battery percentage: %v", err))
+			return
+		}
 
-		irccon.Privmsg(reply, fmt.Sprintf("Percentage: %d", percentage))
+		is_charging := "yes"
+		if !charging {
+			is_charging = "no"
+		}
+
+		irccon.Privmsg(reply, fmt.Sprintf("Percentage: %d. Charging: %s", percentage, is_charging))
 
 	}()
 	return nil
@@ -100,8 +126,18 @@ func vibrate(e *irc.Event, parsed_message, reply string) error {
 }
 
 func help(e *irc.Event, parsed_message, reply string) error {
-	irccon.Privmsg(reply, commandprefix+"{say,silence,spacestate,alert,battery}")
+	irccon.Privmsg(reply, commandprefix+"{say,silence,spacestate,alert,battery,vibrate}")
 	return nil
+}
+
+func recurring(interval time.Duration, fu recFunc) {
+	for true {
+		time.Sleep(interval)
+		err := fu()
+		if err != nil {
+			log.Println("recurring error:", err)
+		}
+	}
 }
 
 func privmsg(e *irc.Event) {
@@ -157,5 +193,40 @@ func main() {
 		fmt.Printf("Err %s", err)
 		return
 	}
+	go recurring(battery_check_time, func() error {
+		percentage, err := BatteryPercentage()
+		if err != nil {
+			return err
+		}
+		if percentage < battery_low {
+			if !battery_charging && time.Now().After(last_battery_warning.Add(battery_reminder_time)) {
+				last_battery_warning = time.Now()
+
+				msg := fmt.Sprintf("WARNING: battery percentage is less than %d: %d", battery_low, percentage)
+				irccon.Privmsg("#techinc-spacephone", msg)
+				Espeak(msg)
+			}
+		}
+		return nil
+	})
+	go recurring(battery_charge_check_time, func() error {
+		charge, err := BatteryCharging()
+		if err != nil {
+			return err
+		}
+		if charge != battery_charging {
+			msg := "battery is now "
+			if charge {
+				irccon.Privmsg("#techinc-spacephone", msg+"charging")
+				Espeak(msg + "charging")
+			} else {
+				irccon.Privmsg("#techinc-spacephone", msg+"discharging")
+				Espeak(msg + "discharging")
+			}
+		}
+		battery_charging = charge
+
+		return nil
+	})
 	irccon.Loop()
 }
