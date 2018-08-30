@@ -43,6 +43,7 @@ var commands = map[string]cmdFunc{
 	"alert":      alert,
 	"battery":    battery,
 	"vibrate":    vibrate,
+	"mpd":        mpdf,
 	"help":       help,
 }
 
@@ -125,8 +126,43 @@ func vibrate(e *irc.Event, parsed_message, reply string) error {
 	return nil
 }
 
+func mpdf(e *irc.Event, parsed_message, reply string) error {
+	if parsed_message == "ping" {
+		err := MpdPing()
+		if err != nil {
+			return err
+		}
+		irccon.Privmsg(reply, "pong")
+	} else if parsed_message == "status" {
+		attrs, err := MpdStatus()
+		if err != nil {
+			return err
+		}
+		irccon.Privmsg(reply, fmt.Sprintf("%v", attrs))
+	} else if parsed_message == "np" {
+		attrs, err := MpdCurrentSong()
+		if err != nil {
+			return err
+		}
+		irccon.Privmsg(reply, fmt.Sprintf("%v", attrs))
+	} else if parsed_message == "play" {
+		err := MpdPause(false)
+		if err != nil {
+			return err
+		}
+		irccon.Privmsg(reply, "Now playing")
+	} else if parsed_message == "pause" {
+		err := MpdPause(true)
+		if err != nil {
+			return err
+		}
+		irccon.Privmsg(reply, "Now paused")
+	}
+	return nil
+}
+
 func help(e *irc.Event, parsed_message, reply string) error {
-	irccon.Privmsg(reply, commandprefix+"{say,silence,spacestate,alert,battery,vibrate}")
+	irccon.Privmsg(reply, commandprefix+"{say,silence,spacestate,alert,battery,vibrate,mpd}")
 	return nil
 }
 
