@@ -19,10 +19,10 @@ const ownnick = "spacephone"
 const battery_low = 42
 
 // When to check if the battery is low
-const battery_check_time = time.Second * 30
+const battery_check_time = time.Minute * 10
 
 // How often to remind about a low battery
-const battery_reminder_time = time.Second * 15
+const battery_reminder_time = time.Hour * 1
 
 // When to check if the battery charging state has changed
 const battery_charge_check_time = time.Second * 30
