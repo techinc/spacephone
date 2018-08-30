@@ -187,7 +187,13 @@ func privmsg(e *irc.Event) {
 
 	msg := e.Arguments[1]
 
-	if strings.HasPrefix(msg, commandprefix) {
+	nameref := false
+	if strings.HasPrefix(msg, ownnick+": ") {
+		msg = msg[len(ownnick+" "):]
+		nameref = true
+	}
+
+	if strings.HasPrefix(msg, commandprefix) || nameref {
 		s := strings.SplitN(msg[1:], " ", 2)
 		cmd := s[0]
 		parsed_msg := ""
