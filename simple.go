@@ -38,6 +38,10 @@ type recFunc = func() error
 
 var commands = map[string]cmdFunc{
 	"say":            say,
+	"sayfr":          sayfr,
+	"sayde":          sayde,
+	"saynl":          saynl,
+	"saybg":          saybg,
 	"silence":        silence,
 	"spacestate":     spacestate,
 	"alert":          alert,
@@ -60,6 +64,30 @@ func say(e *irc.Event, parsed_message, reply string) error {
 	}
 	Espeak(parsed_message)
 	return nil
+}
+
+func saylang(e *irc.Event, parsed_message, reply, lang string) error {
+	if time.Now().Before(silenced) {
+		return fmt.Errorf("Currently silenced")
+	}
+	EspeakLang(lang, parsed_message)
+	return nil
+}
+
+func sayfr(e *irc.Event, parsed_message, reply string) error {
+	return saylang(e, parsed_message, reply, "fr")
+}
+
+func sayde(e *irc.Event, parsed_message, reply string) error {
+	return saylang(e, parsed_message, reply, "de")
+}
+
+func saynl(e *irc.Event, parsed_message, reply string) error {
+	return saylang(e, parsed_message, reply, "nl")
+}
+
+func saybg(e *irc.Event, parsed_message, reply string) error {
+	return saylang(e, parsed_message, reply, "bg")
 }
 
 func silence(e *irc.Event, parsed_message, reply string) error {
