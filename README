@@ -1,4 +1,4 @@
-GOOS=linux GOARCH=arm GOARM=6 go build simple.go mqtt.go battery.go  espeak.go
+GOOS=linux GOARCH=arm GOARM=6 go build simple.go battery.go espeak.go mpd.go mqtt.go powerbar.go vibrate.go
 
 Uses a modified version of github.com/thoj/go-ircevent because tls init fails on
 the Nokia N900 (no /etc/ssl/certs), so I had to strip out (all) tls.
