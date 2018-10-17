@@ -51,6 +51,61 @@ func MqttSay(message, nick string) error {
 	})
 }
 
+func MqttIrc(src, msg string) error {
+	payload := map[string]interface{}{
+		"user": src,
+		"who":  msg,
+	}
+	j, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	// Publish a message.
+	return mqttcli.Publish(&client.PublishOptions{
+		QoS: mqtt.QoS0,
+		// TODO: Channel hardcoded, should not relay privmsg and so on
+		TopicName: []byte("irc/techinc"),
+		Message:   j,
+	})
+}
+
+func MqttIrcJoin(who string) error {
+	payload := map[string]interface{}{
+		"join": who,
+	}
+	j, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	// Publish a message.
+	return mqttcli.Publish(&client.PublishOptions{
+		QoS: mqtt.QoS0,
+		// TODO: Channel hardcoded, should not relay privmsg and so on
+		TopicName: []byte("irc/techinc"),
+		Message:   j,
+	})
+}
+
+func MqttIrcPart(who string) error {
+	payload := map[string]interface{}{
+		"part": who,
+	}
+	j, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	// Publish a message.
+	return mqttcli.Publish(&client.PublishOptions{
+		QoS: mqtt.QoS0,
+		// TODO: Channel hardcoded, should not relay privmsg and so on
+		TopicName: []byte("irc/techinc"),
+		Message:   j,
+	})
+}
+
 func MqttStop() {
 	defer mqttcli.Terminate()
 }

@@ -224,6 +224,16 @@ func recurring(interval time.Duration, fu recFunc) {
 	}
 }
 
+func join(e *irc.Event) {
+	// TODO CHANNEL
+	go MqttIrcJoin(e.Nick)
+}
+
+func part(e *irc.Event) {
+	// TODO CHANNEL
+	go MqttIrcPart(e.Nick)
+}
+
 func privmsg(e *irc.Event) {
 	user_or_chan := e.Arguments[0]
 
@@ -234,6 +244,8 @@ func privmsg(e *irc.Event) {
 	}
 
 	msg := e.Arguments[1]
+
+	go MqttIrc(e.Nick, msg)
 
 	nameref := false
 	if strings.HasPrefix(msg, ownnick+": ") {
@@ -262,7 +274,6 @@ func privmsg(e *irc.Event) {
 			log.Println("Unknown command:", cmd)
 		}
 	}
-
 }
 
 func main() {
@@ -278,6 +289,8 @@ func main() {
 	})
 	irccon.AddCallback("366", func(e *irc.Event) {})
 	irccon.AddCallback("PRIVMSG", privmsg)
+	irccon.AddCallback("JOIN", join)
+	irccon.AddCallback("PART", part)
 	err := irccon.Connect(serverssl)
 	if err != nil {
 		fmt.Printf("Err %s", err)
