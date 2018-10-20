@@ -234,6 +234,11 @@ func part(e *irc.Event) {
 	go MqttIrcPart(e.Nick)
 }
 
+func quit(e *irc.Event) {
+	// TODO CHANNEL
+	go MqttIrcQuit(e.Nick)
+}
+
 func privmsg(e *irc.Event) {
 	user_or_chan := e.Arguments[0]
 
@@ -291,6 +296,7 @@ func main() {
 	irccon.AddCallback("PRIVMSG", privmsg)
 	irccon.AddCallback("JOIN", join)
 	irccon.AddCallback("PART", part)
+	irccon.AddCallback("QUIT", quit)
 	err := irccon.Connect(serverssl)
 	if err != nil {
 		fmt.Printf("Err %s", err)
