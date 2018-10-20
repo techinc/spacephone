@@ -54,7 +54,7 @@ func MqttSay(message, nick string) error {
 func MqttIrc(src, msg string) error {
 	payload := map[string]interface{}{
 		"user": src,
-		"who":  msg,
+		"msg":  msg,
 	}
 	j, err := json.Marshal(payload)
 	if err != nil {
