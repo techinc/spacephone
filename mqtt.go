@@ -106,6 +106,24 @@ func MqttIrcPart(who string) error {
 	})
 }
 
+func MqttIrcQuit(who string) error {
+	payload := map[string]interface{}{
+		"quit": who,
+	}
+	j, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	// Publish a message.
+	return mqttcli.Publish(&client.PublishOptions{
+		QoS: mqtt.QoS0,
+		// TODO: Channel hardcoded, should not relay privmsg and so on
+		TopicName: []byte("irc/techinc"),
+		Message:   j,
+	})
+}
+
 func MqttStop() {
 	defer mqttcli.Terminate()
 }
